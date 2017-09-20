@@ -1,0 +1,62 @@
+高级查询（一）
+	更改sqlplus数据行度和分页
+	可以运用SQL*Plus自身一些语句改变环境参数。
+	1、设置sqlplus模式显示总行数（当前连接生效）：
+	show pagesize;    ---查看目前的pagesize
+	set pagesize 300; ---设置pagesize宽度
+	2、设置sqlplus模式显示行宽度（当前连接生效）：
+	show linesize;  ---查看当前的linesize宽度
+	set linesize 900; ---设置linesize宽度
+	3、修改安装目录glogin.sql文件（永久生效）：
+	set pagesize 300;
+	set linesize 900;
+oracle表的管理
+	修改表
+	添加一个字段
+	>alter table student add (classid nubmer(2));
+	修改字段的长度
+	>alter table student modify (xm varchar2(30));
+	修改字段的类型或是名字（不能有数据）
+	>alter table student modify (xm char(30));
+	删除一个字段
+	>alter table student drop column sal;
+	修改表的名字
+	>rename student to stu;
+	删除表
+	>dorp table student;
+	所有字段都插入
+	>insert into student values ('A001','张三','男','01-5月-05',10);
+	oracle中默认的日期格式'DD-MON-YY'，dd 天 mon 月份 yy 2位的年 '09-6月-99' 1999年6月9号
+	改日期的默认格式
+	>alter session set nls_date_format ='yyyy-mm-dd';
+	修改后，可以用我们熟悉的格式添加日期类型：
+	>insert into student values ('A002','MIKE','男','1905-05-06',10);
+	windows系统，则只需要更改注册表key_local_machine/software/oracle下面的NLS_LANG和NLS_DATE_FORMAT的键值即可 ：yyyy-mm-dd没有可以添加这两个文件
+	改一个字段
+	update student set sex='女' where xh='A001';
+	修改多个字段
+	update student set sex='男',birthday='1980-04-01' where xh='A001';
+	修改含有null值得数据       不能用=null ，要用is null
+	删除数据
+	delete from student;
+	删除所有记录，表结构还在，写在日志，可以恢复，但是速度慢
+	drop table student;   删除表的结构和数据
+	delete from student where xh='A001';    删除一条记录
+	truncate table student;
+	删除表中的所有的记录，表结构还在，不写日志，无法找回删除的记录，速度快
+	查看表结构
+	>desc dept;
+	查询所有列
+	>select * from dept;
+	查询指定列
+	>select ename,sal,job,deptn from emp;
+	如何取消重复行
+	>select distinct deptno,job from emp;
+	使用where子句
+	%：表示0到多个字符     _:表示单个字符
+	>select ename,sal from emp where enarme like 'S%';   查找以S开头的名字的工资
+	>select ename,sal from emp where enarme like '__O%';  查找名字中第三个字幕是O的工资
+	>select empno,ename,sal from emp where empno in (7654,7698,7782);  查找工号7654，7698，7782员工的姓名和工资
+	>select * from emp where mgr is null;        查找mgr为空的行   查找显示没有上级的雇员情况
+	查询工资高于500或是岗位为MANAGET的雇员，同时还要满足他们的姓名首写字母为大写的J：
+	>select ename 雇员姓名,job 雇员岗位,sal 雇员工资 from emp where (sal >500 or job ='MANAGER')AND ename like 'J%';
