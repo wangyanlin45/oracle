@@ -1,0 +1,117 @@
+什么是查询
+	select * from sales(表名)   “*”表示所有
+	查询产生一个虚拟表
+	看到的是表形式显示的结果，但结果并不真正存储
+	每次执行查询只是现从数据表中提取数据，并按照表的形式显示出来
+	结果集：就是查询的结果
+查询：
+	SELECT <列名>
+	FROM <表名>	
+	[WHERE <查询条件表达式>]
+	[PRDET BY <排序的列名>[ASC(按升序排列)/DESC(按降序排列)]]     默认按升序排列
+	例如：
+	select Studentld,StudentName,Address
+	from Students
+	where SEX='男'
+	order by Studentld
+数据查询---基础
+	查询全部的行和列不加条件
+	select * from emp;
+	查询部分列不加条件
+	select empno,ename from emp;
+	查询加条件
+	select empno,ename from emp where job='SALESMAN';
+	select *查询方式尽量少用，查询时间较长
+算术运算符
+	算术运算符用于执行数值计算
+	可以在SQL语句中使用算术表达式，算术表达式由数值数据类型的列名，数值常量和连接它们的算术操作符组成
+	算术操作符包括加(+)、减(-)、乘(*)、除(/)
+	>select sid,javascore+dbscore from score where stuid='10011';
+	emp表练习
+	1.显示月工资>2000的员工的姓名、月供工资和年工资
+	select ename,sal,sal*12 from emp where sal>2000;
+关系运算
+	1.查询emp表中薪资大于1500的员工编号、员工姓名、薪资
+	select empno,ename/sal from emp where sal>1500;
+	2.查询emp表中职位非SALESMAN的员工编号、员工姓名
+	select empno,ename from emp where job <>'SALESMAN';
+	select empno,ename from emp where job !='SALESMAN';
+		
+逻辑操作
+	显示1981-5月05至1980-1月-01雇佣的员工信息
+	  >select * from emp where hiredate >'01-1月-1980' and hiredate < '05-5月-1981';
+	或：>select * from emp where hiredate >'01-jan-1980' and hiredate < '05-may-1981';
+	select empno,ename,hiredate from emp where hiredate >to_date('1980/01/01','yyyy/mm/dd') and hiredate < to_date('1981/05/05',''yyyy/mm/dd);
+连接运算符
+	连接运算符用于将多个字符串或数据值合并成一个字符串
+	>select ('员工的姓名是' || ename) from emp;
+	通过使用连接操作符可以将表中的多个列合并成逻辑上的一行列
+	
+Date类型用法补充
+	Date类型
+	(1)在英文版本的ORACLE中默认日期格式为'DD-MON-YY',例如：'01-JAN-98'
+	在汉化的中文版本中ORACLE默认日期格式为'日-月-年'，例如：'21-8月-2003'或'21-8月-03'
+	(2)转换字符串为日期
+	使用ORACLE内部函数to_date ()
+	to_date (string_value,date_format)
+	变量定义如下：
+	string_value:为字符串直接值(字符串本身)、字符串列(数据库中定义的某个标的某列)或某字符串内部函数的返回值。
+	date_format为合法的oracle日期格式。
+	下列更新语句均符合ORACLE的日期格式，更新成功
+	create table student (                     --创建student表
+	name varchar2(10) not null primary key,
+	enrolldate date no null
+	);
+	insert into student values ('mark1',to_date('21-08-2003','DD-MM-YYYY'));
+	insert into student values('mark2','21-8月-2003');
+	
+数据查询----别名
+	使用AS来命名列
+	select empno as 员工编号,ename as 员工姓名 from emp;
+	注意：别名可以加双引号“”也可以不加，但是如果别名中有空格，必须加双引号，as也可以省去用空格代替
+	select (ename || 'is a'||job)as "emp details" from emp;
+	
+数据查询---限制行数
+	限制固定行数
+	select empno,ename from emp where rownum<=5;
+	rownum如果想正常表示，则筛选出来的序列必须从第一行开始，如果不从第一行开始，则无法正常表示
+	
+数据查询---排序	
+	升序排序：
+	select empno,ename,sal from emp order by sal;
+	降序排序：
+	select empno,ename,sal from emp order by desc;
+	按多列排序
+	select * from emp order by deptno asc,sal desc;
+	select * from emp order by sal*12;
+	
+什么是聚合函数？
+	SQL的内部函数
+	字符串函数
+	日期函数
+	转换函数
+聚合函数：一组值进行计算，并返回计算后的值，具有统计数据的作用；
+	sum()求和
+	select sum(StudetResult) as 学号为23的学生总分
+	from Result
+	where StudentID=23;
+	代码错误：
+	select sum(StudetResult) as 学号为23的学生总分,SubjectID as 科目编号
+	from Result
+	where StudentID=23;
+	avg()  平均成绩
+	select avg(StudetResult) as 及格平均成绩
+	from Result
+	where StudentResult >=60;
+	有聚合函数需要用group by 去分组
+	max(),min()
+	select avg(StudetResult) as 平均成绩,max(StudentResult) as 最高分,min(StudentResult) as 最低分
+	from Result
+	where StudentResult>=60
+	count()  计算行数
+	select count(*) as 及格人数 from Result where StudentResult>=60;
+	查询80-90的最高分和最低分，平均值，总分
+	select max(src) from stu where src<90 and src>80;
+	select min(src) from stu where src<90 and src>80;
+	select max(src) 最大值,min(src) 最小值 from stu where src<90 and src>80;
+	select max(src) 最大值,min(src) 最小值，avg(src) 平均值,sum(src) 总分 from stu where src<90 and src>80;
