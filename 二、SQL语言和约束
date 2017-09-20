@@ -1,0 +1,358 @@
+SQL语言和约束
+简介
+	SQL是结构化的查询语言的首字母缩写词
+	SQL是数据库语言，Oracle使用该语言存储和检索信息
+	表是主要的数据库对象，用于存储数据
+	通过SQL可以实现与Oracle服务器的通信
+SQL的组成
+	DML(数据操作语言)
+	--查询、插入、删除、修改数据库中的数据
+	--select、insert、update、delete等
+	DCL(数据控制语言)
+	--用来控制存储许可、存取权限等
+	--grant、revoke等
+	DDL(定义语言)
+	--用来建立数据库、数据库对象和定义其列
+	--create table、droptable等
+	TCL(事务控制语言)
+	--commit、savepoint、rollback
+DCL数据定义语言	：用于改变数据库结构，包括创建、更改和删除数据库对象
+	用于操纵表结构的数据定义语言命令有：
+		CREATE TABLE       ALTET TABLE      DROP TABLE
+创建表		
+	例如：创建学生信息表students，该表包括学号、姓名、年龄、系别编号、日期编号
+	create table students(
+	stuno number(10),     --学号
+	stuname varchar2(8),  --姓名
+	sex char(2),			--性别
+	age int,				--年龄，oracle本来没有int为了增加兼容性，体统了int类型，只能用来存整数
+	departno varchar2(2),	--系别编号
+	classno varchar2(4),	--编辑编号
+	regdate date			--建档日期
+	);	
+	commit   --提交
+数据类型
+	CHAP(length)	存储固定长度的字符串。参数length制定了长度，如果存储的字符串长度小于length，用空格填充，默认长度1，最长不超过2000字节。
+	VARCHAR2(length)存储可变长度的字符串。参数length制定了长度，默认长度1，最长不超过4000字节。
+	number(p,s)		既可以存储浮点数，也可以存储整数，p表示数字的最大位数(如果是小数包括整数部分和小数部分和小数点，p默认为38位)，s是指小数位数。
+	date			存储日期和时间，存储纪元、4位年、月、日、时、分、秒。存储时间从公元前4712年1月1日到公元后4712年12月31日。
+	timestamp		不但存储日期的年月日，时分秒，以及秒后6位，同时包含时区。
+	CLOB			存储大的文本，比如存储非结构话的XML文档
+	BLOB			存储二进制对象，如图形、视频声音等。
+	int             整型
+	1、varchar2把所有字符都占两个字节处理(一般情况下)，varchar只对汉字和全角等字符占两个字节，数字，英文字符等都是一个字节；
+	2、varchar2把空串等同于null处理，而varchar仍按照空串处理；
+	3、varchar2字符要用几个字节存储，要看数据库使用的字符集；
+	大部分情况建议使用varchar2类型。可以保证更好的兼容性。
+	创建成功后，可使用desc或describe 表名 查看表的结构。
+维护数据表	
+	更改表结构
+	创建完成后，可根据需要表中增加列，可以使用alter table 表名 add....
+	例如：在students表中增加province(省份) 新字段
+	alter table students add province varchar2(10);
+删除列
+	创建完成后，可根据余姚删除列，可以使用
+	alter table 表名 drop column 列名...
+	例如：在students表中删除province(省份) 新字段
+	alter table students drop column province;
+	注意：删除一列必须加column关键字，但是如果要删除多列，不能使用column关键字；
+	例如：在students表中删除province和regdate字段
+	alter table students drop (province,regdate);
+修改列字段相关的属性
+	创建完成后，可根据需要修改列字段相关属性，可以使用
+	alter table 表名 modify 列名 属性
+	例如：在students表中增加province字段长改为20
+	alter table students modify province varchar2(20);
+重命名格式
+	alter table 旧表名 rename to 新表名
+	例如：在students表名改为student
+	alter table students rename to student；
+删除表格式
+	drop table 表名 [cascade constraints]
+	例如：删除students表
+	drop table students；
+数据完整性 
+	数据存放在表中
+	数据完整性的问题大多是由于设计引起的
+	创建表的时候，就应当保证以后数据输入是正确的
+	--错误的数据、不符合要求的数据不允许输入
+	创建表：保证数据完整性=实施完整性约束
+创建约束
+	对比左右两个建表语句有什么不同
+	create table students(                  create table students(
+	stuno number(10),                       stuno number(10) not null,
+	stuname varchar2(8),                    stuname varchar2(8),
+	sex char(2),                            sex char(2),
+	age int,                                age int,
+	departno varchar2(2),                   departno varchar2(2) not null, 
+	classno varchar2(4),                    classno varchar(4) not null,
+	regdate date default sysdate            regdate date default sysdate
+	);                                      );
+	约束用于限制加入表的数据的类型，目的是保证数据的一致性和完整性；
+	可以在创建表是规定约束(通过CREATE TABLE语句)，或者在表创建之后也可以(通过ALTER TABLE语句)
+	NOT NULL、UNIQUE、PRIMARY KEY、CHECK、DEFAULT
+	
+非空约束NOT NULL
+	非空约束就是限制必须某个列提供值。控制(NuLL)是不存在值，它既不是数字0，也不是空字符串，而是不存在、未知的情况。
+	create table Books
+	(
+	BookNo number(4)not null,	--图书编号
+	BookName varchar2(20),		--图书名称
+	Author varchar2(10),		--作者
+	SalePrice number(9,2),		--定价
+	PublisherNo varchar2(4) not null, --出版社编号
+	PublishDate date，		--出版日期
+	ISBN vardhar2(20) not null 	--ISBN	
+	)；
+	问题：
+	1、如何为Books表中BookName字段设置非空约束？
+	alter table Books modify bookname not null;
+	2、如何为Books表中BookName字段设置可以为空约束？
+	alter table Books modify bookname null;
+默认约束DEFAULT
+	默认值约束：给定列的默认值，即当插入一行时，若不给出该列的值，就用默认值代替
+	格式：DEFAULT <常量值>
+	例如：sex CHAR(1) DEFAULT 'm'
+	问题：
+	1、如何为Books表中BookName字段设置默认约束为yuwen？
+	alter table dsb modify varchar(20) default 'yuwen';
+主键约束PRIMARY KEY
+	主键约束用于唯一地标识表中的每一行记录。在一个表中，最多只能有一个主键约束，主键约束既可以由一个列组成，也可以由两个或两个以上的列组成(这种称为联合主键)
+	主键约束格式：
+	constraint 自定义主键名称 primary key (主键列名)
+	创建表时第一种添加主键方法                                      创建表时第二种添加主键方法
+	create table Books(                                               createtableBooks(
+	BookNo number(4),                       --图书编号              BookNo number(4) prinary key,
+	BookName varchar2(20),                  --图书名称              BookName varchar2(20),				
+	Author varchar2(10),                    --作者                  Author varchar2(10),		
+	SalePrice number(9,2)                   --定价                  SalePrice number(9,2)
+	PublisherNo varchar2(4) not null，-出版社编号                   PublisherNo varchar2(4) not null，
+	PublishDate date，				--出版日期		                PublishDate date，
+	ISBN vardhar2(20) not null,-ISBN					            ISBN vardhar2(20) not null,-ISBN
+	constraint BOOK_pk primary key (BookNo)			                );
+	);
+	注意：主键本身不予许为null，自动添加列为not null
+	问题：
+	1、如何为Books表中BookName字段添加为主键？
+	alter table Books add constraint BOOK_PK primary key (bookname);
+	删除主键约束格式
+	alter table 表名 drop 约束名
+	例如：删除BOOKS表主键BookName
+	alter table books drop constraint BOOK_PK;
+唯一性约束UNIQE KEY
+	唯一性约束UNIQE强调躲在的列不允许有相同的值，但是，它的定义比主键约束弱，它所在的列允许空值(主键是不允许为空值)
+	唯一性约束的主要作用是在保证除了主键列外，其他列值得唯一性。
+	唯一性约束格式：
+	CONSTRAINT 自定义唯一约束名称 UNIQUE (列名)
+	主键约束=非空+唯一
+	唯一约束第一种方式
+	create table Members
+	(
+	MemNo number(4) not null, 					--会员编号
+	Email varchar2(30), 						--电子邮箱地址
+	QQ varchar2(20) Constraint QQ_UK unique, 	--QQ号，并设置为UNIQUE约束
+	Constraint Mem_PK primary key (MemNo) 		--主键约束列为MemNo
+	);
+	唯一约束第二种方式
+	create table Members
+	(
+	MemNo number(4) not null, 					--会员编号
+	Email varchar2(30), 						--电子邮箱地址
+	QQ varchar2(20), 							--QQ号，并设置为UNIQUE约束
+	Constraint Mem_PK primary key (MemNo)		--主键约束列为MemNo
+	Constraint QQ_UK unique (QQ)				--如果同时定义多个唯一性约束，在括号中用，隔开
+	);
+	注意：唯一约束字段可以为空，如果为该字段再加上not null，则作用跟主键类似，
+外键约束FOREIGN KEY
+	一般的外键约束会使用两个表进行关联，外键是指“当前表(即外键表)”引用“另一个表”(即被引用表)的某个列
+	或某几个列，而“另外一个表”中，在“另外一个表中”中，被引用列中不被引用的列必须具有主键约束或者唯一性
+	约束存在的数据不能出现在“当前表”对应的列中。一般情况下，当删除被引用表中的数据时，该数据也不能出现在
+	外键表的外键列中。如果外键列存储了被引用表中将要删除的数据，那么对被引用表的删除操作将失败。
+	主键约束格式：	
+	CONSTRAINI 自定义外键名称 FOTEIGN KEY (外键表列名) REFETENCES 被引用表名 (被引用列名)
+	表一地市表
+	create table dsb(
+	id number primary key,
+	dname varchar2(20) not null
+	);
+	表二学生表
+	create table stu(
+	sid number primary key,
+	sname varchar2(20) not null,
+	d_id number,
+	constraint FK foreign key (d_id) references dsb(id)
+	);
+	问题：1、如何为stu表中d_id字段添加为外键？
+	alter table stu add constraint FK foreign key (d_id) references dsb(id);
+	外键建立后注意事项
+	1、当主表中没有对应的记录是，不能将记录添加到子表
+	2、不能更改主表中的值而导致子表中的记录孤立
+	3、子表存在与主表对应的记录，不能从主表中删除该行
+	4、删除主表前，先删除子表
+创建序列
+	问题：录入数据库记录时，表的ID字段能否实现自动编号功能呢？
+	分析：Oracle没有类似SQL Server中的identity来定义主键自增属性
+	可以定义一个序列sequence、然后在插入数据时取序列中的下一个值即可。
+	语法：
+	create sequence sequence_name
+	[INCREMENT BY n] --递增步长
+	[START WITH n] 	 --初始值
+	[MAXVALUE n | NOMAXVALUE] 最大值
+	[MINVALUE n | NOMINVALUE] 最小值
+	[CYCLE | NOCYCLE]    循环
+	[CACHE n | NOCACHE]  内存中存储值个数
+	【例】创建序列stuno：
+	CREATE SEQUENCE stuno
+	MINVALUE 1
+	NOMAXVALUE
+	START WITH 26
+	INCREMENT BY 1
+	NOCACHE
+	CACHE 20;
+序列使用
+	使用序列：
+	CURRVAL:返回序列当前值,初次禁止使用此选项，否则报错；
+	NEXTVAL:返回当前序列值增加一个步长后的下一个值
+	得到序列的新值：
+	stuno.NEXTVAL
+	例如：
+	insert into students (stuno,stuname) values(stuno.nextval,'ls');
+	使用select * from students查看
+	执行了以上语句后，会为student表插入一条数据，并且stuno列会使用序列stuno所生成的序列号。
+	CURRVAL只有当NEXTVAL之后才能用
+数据操纵语言DML
+	数据操纵语言用于检索、插入和修改数据
+	数据操纵语言是最常见的SQL命令
+	数据操纵语言命令包括：SELECT INSERT UPDATE DELETE	
+DML-INSERT命令
+	语法结构：根据结果集创建表
+	insert into 表名(列名1，列名2....)VALUES(值1，值2....)
+	语法解析：
+	1、列名可以省略，当省略列名时，默认是表中的所有列名，列名顺序为表定义中列的先后顺序。
+	2、值得数量和顺序要与列名的数量和顺序一致，值得类型与列名的类型一致。
+	INSERT INTO Student (sid,sname,address,gradeId,sex) VALUES (1,'马云','惠普基地',6,'男')
+	注意事项1：
+	每次插入一行数据，不能只插入半行或者几列数据，插入的数据是否有效将按照整行的完整性的要求来检验
+	INSERT INTO Student (sid,sname,address,gradeId,sex) VALUES ('马云')  代码错误
+	注意事项2：
+	每个数据值得数据类型、精度和小数位数必须与相应的列匹配
+	INSERT INTO Students (StudentName,Address,GradeId,Email,DEX) VALUES ('马云','惠普基地',myy,'男') 代码错误
+	注意事项3：
+	如果在设计表的时候就指定了某列不允许为空，则必须插入数据
+	INSERT INTO Students (Address,Gradeid,DEX) VALUES ('马云','惠普基地',1,'男') 代码错误
+	注意事项5：
+	具有缺省值得列，可以使用DERAULT(缺省)关键字来代替插入的数值
+	INSERT INTO Students (StudentName,Address,GradeId,DEX) VALUES ('马云',DEFAULT,6,'男')
+插入多行数据
+	语法1
+	INSERT INTO <表名>(列名)
+	SELECT <列名>
+	FROM <源表名>
+	例如：
+	INSERT INTO TongXunLu (姓名,地址,电子邮件)
+	SELECT SName,SAddress,SEmail
+	FROM Student
+	语法2
+	INSERT INTO <表名>(列名)
+	SELECT <列名> from dual UNION
+	SELECT <列名> from dual UNION
+	.......
+	例如：
+	INSERT INTO STUDENTS (SName,SGrade,SSex)
+	SELECT '张珂',7,1 from dual UNION
+	SELECT '李阳',4,0 from dual UNION
+	SELECT '杨晓',2,0 from dual UNION
+	SELECT '汤美',3,0 from dual UNION
+	SELECT '张伟',7,1 from dual UNION
+	现在给大家介绍一个小技巧，Oracle里有一个很奇特的表，叫Dual。
+	首先，你知道seledt '1' from dual 是什么结果？结果就是返回1.
+	其次，你知道
+	seledt '1' from dual
+	union all
+	seledt '2' from dual
+	结果就是
+	1
+	2
+	那么，最关键的
+	insert into 表名 (字段1)
+	seledt '1' from dual
+	union all
+	seledt '2' from dual
+	那么这次插入了两条数据，当然如果全字段插入那么(字段1)还可以省略掉
+	例如：
+	insert into doc_data (code,id,value,state)
+			  select '13','川A','成都市公安局交通警察支队车辆管理所',0 from dual
+	union all select '13','川B','绵阳市公安局交通警察支队车辆管理所',0 from dual
+	union all select '13','川C','自贡市公安局交通警察支队车辆管理所',0 from dual
+	
+更新数据行
+	语法结构：UPDATE操作   把旧的值更新为新的值
+	UPDATE 表名 SET 列名1=值,列名2=值.....WHERE 条件
+	UPDATE Student SET SEX = 0
+	UPDATE Student SET Address ='郑州大学' WHERE Address ='河南大学'
+	UPDATE Result SET StudentResult=StudentResult+5 WHERE StudentResult<=95
+删除数据行
+	语法结构：DELETE操作
+	DELETE FROM 表名 WHERE 条件
+	DELETE FROM 学院信息表 WHERE 学号=''0010012
+	如果有外键约束，则删除不会成功，需先删除外键表中相应信息
+删除数据
+	delete from 表名
+	删除所有记录，表结构还在，写日志，可以恢复，速度慢
+	truncate table 表名
+	删除表中的所有记录，表结构还在，不写日志，无法找回删除的记录，速度快，不可恢复
+事务控制语言TCL
+	事务是最小的工作单元，作为一个整体进行工作
+	保证事务的整体成功或失败，称为事务控制
+	用于事务控制的语句有：
+		COMMIT		--提交并结束事务处理
+		ROLLBACK	--撤销事务中已完成的工作
+		SAVEPOINT	--标记事务中可以回滚的点
+	UPDATE Result 
+	SET StudentResult =StudentResult + 5
+	WHERE StudentResult <=95;
+	SAVEPOINT mark1;
+	DELETE FROM Result WHERE id='o002';
+	SAVEPOINT mark2;
+	ROLLBACK TO SAVEPOINT mark1;
+	COMMIT;
+	一旦commit后就无法回滚了
+数据控制语言
+	数据控制语言为永辉提供权限控制命令
+	用于权限控制的命令有：
+	GRANT    授予权限
+	REVOKE   撤销已授予的权限
+	GRANT SELECT ON Student TO SCOTT WITH GRANT OPTION;
+	REVOKE SELECT ON Student FROM SCOTT;
+	如果执行GRANT命令为某个SCEMA赋对象权限时带上了WITH GRANT OPTION，那么该SCHEMA就可以将该对象权限授予他人，否则不行。
+	如果执行GRANT命令为某个SCEMA赋对象权限时带上了WITH ADMIN OPTION，那么该SCHEMA就可以将该系统权限授予他人，否则不行。
+算术运算符
+	算术运算符用于执行数值计算
+	可以在SQL语句中使用算术表达式，算术表达式由数值数据类型的列名，数值常量和连接它们的算术操作符组成
+	算术操作符包括加(+)、减(-)、乘(*)、除(/)
+	>select sid,javascore+dbscore from score where stuid='10011';	
+比较运算符
+	比较运算符用于比较两个表达式的值
+	比较操作符包括=、!=、<、>、<=、>=、BETWEEN....AND、IN、LIKE和IS NULL等
+	>SELEDT stuname,stuaddress FROM Student WHERE stuage >20;
+	>SELECT stuname,address FROM Student WHERE stuaddress IN ('洛阳,郑州,上海');
+	>SELECT stuname,stuaddress FROM Student WHERE stuname LIKE '张%';
+逻辑运算符
+	逻辑运算符用于组合多个计较运算的结果以生成一个或真或假的结果。
+	逻辑操作符包括与(AND)、或(OR)、非(NOT)。
+	>SELECT * FRON Student WHERE borndate>='10-5月-91'AND borndate<='26-5月-91';
+	显示 1991-5-10至1991-5-26出生的学生
+连接运算符
+	连接运算符用于将多个字符串或数据值合并成一个字符
+	>SELECT ('地址是'||address)address FROM Student WHERE studentid='10011';
+	通过使用连接操作符可以将表中的多喝列合并成逻辑上的一行列
+	>select (name||'的学号是：'||no||'，成绩是：'||src) info from stu;
+	明明的学号是：1，成绩是：95
+操作符的优先级
+	SQL操作符的优先级从高到低的顺序是：
+	算术运算符     -----最高优先级
+	连接运算符
+	比较运算符
+	NOT逻辑操作符
+	AND逻辑操作符
+	OR 逻辑操作符    -----最低优先级
