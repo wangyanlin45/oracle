@@ -1,0 +1,76 @@
+高级查询（二）
+	模糊查询--LIKE
+	查询时，字段的内容并不一定与查询内容完全匹配，只要字段中含有这些内容
+	select ename as 姓名 from emp where ename like 'A%';
+通配符
+	"_":    匹配一个字符                    例如：a like 'C_'
+	"%":    匹配0个或多个任意长度的字符串   例如：b like 'CO_%'
+	"[]":   括号中所指定范围内的一个字符    例如：c like '9W0[1-2]'
+	'_S%'   第二个字符是S的字符串
+	'%30\%%' escape '\'   包含“30%”的字符串，“\”指转义字符，“\%”在字符串中表示一个字符“%”
+	select * from emp where ename like '%S%';
+	select * from emp where ename like '%b_%' escape 'b';
+模糊查询--NULL
+	插入部分字段
+	insert into student (xh,xm,sex) values ('A003','JOHN','女');
+	插入控值
+	insert into student (xh,xm,sex,birthday) values ('A004');
+	如果某条记录中缺少的数据值，就是空值（NULL），空值不等于0或者空格，空值是指为赋值、未知或不可用的值。
+	任何数据类型的列都是都可以包括NULL值，除非该列被定义为非空或者主键。
+	emp表中的NULL值
+	select ename,job,sal,comm from emp where sal < 2000;
+	注意：在查询条件中NULL值用 IS NULL 作条件，非NULL值用 NOT IS NULL 做条件。
+模糊查询--IS NULL	
+	把某一字段中内容为空的记录查询出来
+	select ename 姓名,comm 奖金 from emp where comm is null;
+	查询出emp表中comm字段不为空的记录
+	select ename 姓名,comm 奖金 from emp where comm not is null;
+模糊查询--BETWEEN
+	在where子句中，可以使用BETWEEN操作来查询列值包含在指定区间内的行，比如查询工资从1500到3000之间的员工，可以使用传统的方法：
+	select ename,sal from emp where sal>=1500 and sal <=3000
+	也可以使用：
+	select ename,sal from emp where sal between 1500 and 3000
+模糊查询--IN
+	把某一字段中内容与所列出的查询内容列表匹配的记录查询出来
+	select ename 姓名,job 工作 from emp where job in ('CLERK','SALESMAN');     匹配工作为CLERK,SALESMAN
+实验1
+	查询工资大于1500的员工的姓名、工作、入职日期
+	select ename,job,hiredate from emp where sal >1500;
+	查询姓名中含有T的员工的姓名，工作和工资。
+	select ename,sal,job from emp where ename like '%T%';
+	查询职位是SALESMAN或者ANALYST的员工的姓名，工资和奖金。
+	select ename,sal,comm from emp where job in ('SALESMAN','ANALYST');
+	查询入职日期早于1987年1月1日的员工的信息。
+	select ename,hiredate from emp where hiredate < '01-jan-1987';
+	查询在1982年1月1日-1988年1月1日之间入职的员工的信息，
+	select ename,hiredate from emp where between '01-jan-1982' and '01-jan-1988';
+Distinct关键字
+	在oracle的查询结果中，可能出现若干相同的情况，用distinct消除重复的行
+	select distinct deptno from emp;
+合并查询
+	集合操作符包括union,union all ,intersect,minus
+	1) union
+	该操作符用于取得两个结果集的并集，当使用该操作符时，会自动去掉结果集中重复行，
+	select ename,sal,job from emp where sal >2500 union select ename,sal,job from emp where job='manager';
+	??select distinct ename,sal,job from emp where sal >2500 or job='manager';
+	2) union all
+	该操作符与union相似，但是它不会去掉结果集中重复行，而且不会排序；
+	select ename,sal,job from emp where sal >2500 union all select ename,sal,job from emp where job='manager';
+	select ename,sal,job from emp where sal >2500 or job='manager';
+	3） intersect
+	使用该操作符用于取得两个结果集的交集。
+	select ename,sal,job from emp where sal >2500 intersect select ename,sal,job from emp where job='manager';
+	select ename,sal,job from emp where sal >2500 and job='manager';
+	4) minus
+	使用该操作符用于取得两个结果集的差集，它只会显示存在第一集合中，而不存在第二个集合中的数据。
+	select ename,sal,job from emp where sal >2500 minus select ename,sal,job from emp where job='manager';
+	select ename,sal,job from emp where sal >2500 and job!='manager';
+	select ename,sal,job from emp where sal >2500 and job<>'manager';
+集合运算
+	集合运算就是将两个或者多个结果集组合成一个结果集，集合运算包括：
+	INTERSECT(交集)：返回两个查询共有的记录；
+	UNION ALL(并集)：返回各个查询的所有记录，包括重复的记录；
+	UNION(并集)：返回各个查询的所有记录，不包括重复的记录；
+	MINUS(补集)：返回第一个查询检索出的记录减去第二个查询检索出的记录之后剩余的记录。
+	注意：当使用集合操作的时候，查询所返回的列数以及列的类型必须匹配，列明可以不同。
+	集合操作的速度比and和or快的多
