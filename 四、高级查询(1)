@@ -60,3 +60,79 @@ oracle表的管理
 	>select * from emp where mgr is null;        查找mgr为空的行   查找显示没有上级的雇员情况
 	查询工资高于500或是岗位为MANAGET的雇员，同时还要满足他们的姓名首写字母为大写的J：
 	>select ename 雇员姓名,job 雇员岗位,sal 雇员工资 from emp where (sal >500 or job ='MANAGER')AND ename like 'J%';
+按照部门号升序而雇员的入职时间降序排列
+	>select ename,deptno,hiredate from emp order by deptno asc,hiredate desc;
+	>select ename,sal ‘工资’ from emp order by "工资"；     也可以用别名排序
+	显示所有员工中最高工资和最低工资
+	>select min(sal),max(sal) from emp;
+	显示所有员工的平均工资和工资总和
+	>select avg(sal),sum(sal) from emp;
+	计算共有多少员工
+	>select count(ename) from emp;
+	请显示工资最高的员工的名字和工作岗位
+	>select ename,job,sal from emp where sal=(select max(sal) from emp);
+	显示工资高于平均工资的员工信息
+	>select ename,job,sal from emp where sal>(select avg(sal) from emp);
+order by:对查询结果进行升序或降序排列
+	1.显示多有员工，按职位降序排列，若相同，则按工资升序排序
+	>select * from emp order by job desc,sal asc;
+	desc:降序
+	asc:升序
+	select * from emp order by；empno?       省略情况下默认按升序排列
+分组函数（聚合函数复习）
+	group by 和 having 子句
+	group by :用于查询的结果分组统计
+	having ：用于限制分组显示结果
+	统计各部门的人数
+	select deptno,count(ename) from emp group by deptno;
+	统计各部门的平均工资和最高工资
+	select deptno,avg(sal),max(sal) from emp group by deptno;
+	按照性别统计各个部门的人数
+	select deptno,gender,count(ename) from emp group by deptno,gender;
+	如果select语句中出现的聚合函数再from前面，那么在聚合函数前面出现的普通的列名/字段其意义为分组统计项，它的作用在于，得到统计结果，所以，这些出现的普通列名，必须写在group by的后面，否则报错；
+	显示部门工资低于2000，
+	select deptno,avg(sal) from emp where sal>2000 group by deptno ;
+多列分组
+	select count(*) as 人数,deptno 部门号,gender 性别 from emp group by deptno,gender order by deptno;
+	
+分组统计	
+	select 列名 [as 别名],[聚合函数]
+	from 表明
+	where [查询条件表达式]    ----是为表服务，后面只能跟表的真实的字段
+	group by [分组列名]
+	having [分组查询表达式]
+	order by 排序的列名[ASC或DESC]
+	其中<分组列名>可以有多个字段，各字段用逗号隔开，它表示按哪些列进行分组。
+	
+分组筛选      having：对筛选的结果进行二次筛选
+	语法：
+	select .... from <表名>
+	where .....
+	group by ....
+	having ....
+	select deptno 部门号,count(*) 人数 from emp group by deptno having count(*)>4;
+WHERE与HAVING对比
+	where子句
+	用来筛选from子句中指定的操作所产生的行
+	group by子句
+	用来分组where子句的输出
+	having子句
+	用来从分组的结果中筛选行
+	where---->group by----->having
+查询那个部门的平均工资低于2000	
+select deptno,avg(sal) from emp group by deptno having avg(sal)<2000;
+查询员工信息表中，员工的工资不低于2000，且人数>1的部门编号和人数
+select deptno,count(*) from emp where sal>=2000	group by deptno having count(*)>1;
+显示每个部门、每种岗位的平均工资和最高工资
+select deptno,job,avg(sal),max(sal) from emp group by deptno,job;
+查询1981年入职的员工中从事不同工作的平均工资
+select job,avg(sal)	from emp where hiredate >'01-jan-1981' and hiredate < '31-dec-1981' group by job;
+查询每个部门中工资高于该部门平均工资的员工人数
+select deptno,count(deptno) from emp group by deptno having sal>avg(sal);????
+对数据分组总结
+	1.分组函数(max,min,avg,count,sum)只能出现在选择列表、having子句、order by 子句中，不能出现在where子句和group by 子句中；
+	2.如果在select语句中同时包含有group by，having，order by，顺序先group by，having，order by
+	  select 列名1,... from 表名 where 条件 group by 分组列名 having 分组过滤 order by 排序列名;
+	3.如果选择列表同时包含列、表达式和分组函数，则这些列、表达式都必须出现在group by中
+	  select deptno,avg(sal),max(sal) from emp group by deptno having  avg(sal)<2000;
+	  这里deptno就必须出现groupby 中
