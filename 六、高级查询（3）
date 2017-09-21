@@ -1,0 +1,91 @@
+高级查询（三）
+	多表查询：是指基于两个和两个以上的表或者试图的查询，再实际应用中，插叙单个表可能不哼满足需求，（如显示sales部门位置和其员工的姓名）这种情况需要使用到（dept表和emp表）
+	  基础：把两个表，合成一个大表，然后再在大表，就有我们需要的所有数值了，如果想把这两个表合成一个大表，首先需要确认的是，这两个表有没有一个相同的列，若有，可按照相等关系，把这个两个列对应在一起，这样大的表就形成了；
+	select * from dept     查看部门编号及名称
+	select * from emp       查看员工表
+内联接
+	 使用比较运算符根据每个表的通用列中的值匹配两个表中的行
+	 特点：等号两边相等，总是把两个表中间共有的那些行拿出来连接，如果某些行，
+	内连接语法：
+	select  .... from 表1 inner join 表2 on ....
+	select ..... from 表1 表2 where .....
+	例如：
+	select * from emp e inner join dept d on e.deptno=d.deptno      (dept d) 起别名 
+	select * from emp,dept where emp.deptno=dept.deptno;    连个表拼接 *中
+多表联接查询---内联接	
+	select e.*,d.dname from emp e inner join dept d on e.deptno=d.deptno;
+	
+	1.显示雇员名、雇员工资及所在部门的名字
+	 select emp.ename,emp.sal,dept.dname from emp,dept where emp.deptno=dept.deptno;
+	2.显示部门为10的员工的姓名，员工名及工资
+	select d.loc,e.ename,e.sal from emp e inner join dept d on e.delete=d.delete where e.deptno=10;
+	3.显示各个员工的姓名、工资及其工资的级别
+	select ename,sal,grade  from emp e inner join salgrade s on e.sal >= s.losal and e.sal <= s.hisal 
+	
+	查询部门位于DALLAS的员工的姓名和工作：
+	select d.loc,e.ename,e.job from emp e,dept d where e.delete=d.delete and d.loc='DALLAS';
+	查询工资大2000的员工姓名、部门、工作、工资。
+	select d.loc,e.ename,e.job,e.sal from emp e,dept d where e.delete=d.delete and e.sal > 2000;
+三个表连接
+	select ... from S inner join C on (S.gid=C.gid) inner join CS on (CS.uid=C.uid);   第三个表与前两连接时，只要有一列和前两个表任意一列相同即可链接
+左外连接
+	一张表为主一张表为辅，主的全部列出来，然后辅与主对照，对上就打印，对不上就空着
+	select e.ename,e.job,d.loc from emp e left join dept d on e.deptno=d.deptno;
+右外连接
+	select e.ename,e.job,d.loc from emp e right join dept d on e.deptno=d.deptno;
+	查询每个部门下的员工的姓名和工资
+	select dname,ename,sal from dept d left join emp e on e.deptno=d.deptno;
+自连接
+	自连接是指在同一张表的连接查询
+	在emp表中实验：
+	select empno,ename,mgr from emp;       查找emp中的工号，姓名，和员工上一级的工号
+	select * from emp,emp where emp.mgr=emp.empno;    出错,因为识别不出两个一样相连
+	select * from emp a,emp b where a.mgr=b.empno;    
+	select a.name 员工,b.ename 领导 from emp a,emp b where a.mgr=b.empno;     这样没有king的
+	select a.name 员工,b.ename 领导 from emp a left join emp b on a.mgr=b.empno;  这样就可以了
+	
+子查询：
+	子查询是指嵌入在其他sql语句中的select语句，也叫嵌套查询
+单行子查询
+	指只返回一行数据的子查询语句：思考：如何显示SMITH同一部门的所有员工？
+多行子查询
+	指返回多行数据的子查询 即嵌套的子查询会返回多行记录；
+执行语句时，子查询会先执行，因sql语句执行顺序为从右到左执行。	
+	
+如何查询出销售部（SALES）下面的员工姓名，工作，工资	
+	使用多表连接查询的方法：
+	select dname,ename,job,sal from emp,dept where emp.deptno=dept.deptno and dname='SALES';
+	使用单子查询：
+	select ename,job,sal from emp where deptno=(select deptno from dept where dname='SALES');
+注意：如果内部查询不返回任何记录，则外部条件中字段DEPTNO与NULL比较永远为假，也就是说外部查询不返回任何结果；
+	在单行子查询的外部查询中可以使用=，>、<、>=、<=、<>等比较运算符；
+	内部查询返回的结果必须与外部查询条件中的字段相匹配；
+	如果内部查询返回多行结果则出现错误；
+	
+多行子查询：
+	查询emp表中工作和MAREIN与SMITH工作相同的员工的信息
+	select * from emp where job in (select job from emp where ename='MARTIN' or ename='SMITH');
+在多行子查询中使用any操作符
+	思考：如何显示工资比部门30的任意一个员工的工资高的员工的姓名，工资和部门号
+	select ename,sal,deptno from where sal >any(select sal from emp where deptno=30);
+在多行子查询中使用all操作符
+	思考：如何显示工资比部门30的所有一个员工的工资高的员工的姓名，工资和部门号
+	select ename,sal,deptno from where sal >all(select sal from emp where deptno=30);
+		
+	创建一个查询，显示与Blake在同一个部门工作的雇员的姓名和受雇日期，Blake不包含在内
+	select ename,hiredate from emp where deptno=(select deptno from emp where ename='BLAKE') and ename<>'BLAKE';
+	显示被King直接管理的雇员的姓名以及工资
+	select ename,sal from emp where mgr=(select empno from emp where ename='KING');
+总结
+	select Students.SName,Score.CourselD,Score.Score from Students,Score where Students.SCode = Score.StudentID;
+	
+多列子查询
+	指查询返回多个列数据的子查询语句
+	如何查询与smith的部门和岗位完全相同的所有雇员
+	select ename,job,deptno from emp where (deptno,job) in (select deptno,job from emp where ename='SMITH');
+	select ename,job,deptno from emp where (deptno,job) = (select deptno,job from emp where ename='SMITH');  子句中与前面的顺序不能颠倒
+在from子句中使用子查询
+	如何显示高于自己部门平均工资的员工的信息
+	select * from emp,(select deptno,avg(sal) from emp group by deptno) aa where emp.deptno=aa.deptno;
+	select * from emp inner join (select deptno,avg(sal) from emp group by deptno) aa on emp.deptno=aa.deptno;
+	说明：在from子句中使用子查询时，该子查询会被作为一个视图对待，因此叫做内嵌视图，当在from子句中使用子查询时，必须给子查询指定别名。
